@@ -1,1 +1,1 @@
-# yandex-diploma-backend
+# news-explorer-api
