@@ -24,7 +24,7 @@ module.exports.deleteArticle = (req, res, next) => {
   const { _id } = req.user;
   const { articleId } = req.params;
 
-  Article.findOne({ _id: articleId })
+  Article.findOne({ _id: articleId }).select('+owner')
     .then((article) => {
       if (!article) {
         throw new NotFoundError('Статья с таким id не найдена');
