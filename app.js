@@ -1,14 +1,18 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
-// const rateLimit = require('express-rate-limit');
 const { errors } = require('celebrate');
 const auth = require('./middlewares/auth');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const { createUser, login } = require('./controllers/users');
 const { signinValidation, signupValidation } = require('./validationData');
-const { urlMongo, limiter } = require('./consts');
+const { urlMongo } = require('./consts');
+const BadRequestError = require('./errors/BadRequestError');
+const centralizedErrors = require('./middlewares/CentralizedErrors');
+const { limiter } = require('./middlewares/limiter');
+const { routerArticles, routerUsers } = require('./routes/index');
 
 // Слушаем 3000 порт
 const { PORT = 3000 } = process.env;
@@ -25,11 +29,6 @@ mongoose.connect(urlMongo, {
   useFindAndModify: false,
   useUnifiedTopology: true,
 });
-
-// const limiter = rateLimit({
-//   windowMs: 15 * 60 * 1000, // за 15 минут
-//   max: 100, // можно совершить максимум 100 запросов с одного IP
-// });
 
 // Подключаем rate-limiter
 app.use(limiter);
@@ -50,8 +49,12 @@ app.post('/signin', signinValidation, login);
 app.use(auth);
 
 // Роутеры
-app.use('/', require('./routes/users'));
-app.use('/', require('./routes/articles'));
+app.use('/', routerArticles, routerUsers);
+
+// Неправильная маршрутизация
+app.use('*', (res, req, next) => {
+  next(new BadRequestError('Запрашиваемый ресурс не найден'));
+});
 
 // Подключаем логгер ошибок
 app.use(errorLogger);
@@ -60,19 +63,6 @@ app.use(errorLogger);
 app.use(errors());
 
 // Централизованный обработчик ошибок
-// eslint-disable-next-line
-app.use((err, req, res, next) => {
-  const { statusCode = 500, message } = err;
-  res
-    .status(statusCode)
-    .send({
-      message: statusCode === 500
-        ? 'На сервере произошла ошибка'
-        : message,
-    });
-});
+app.use(centralizedErrors);
 
-app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
-  console.log(`Server has been started on port ${PORT}`);
-});
+app.listen(PORT);
