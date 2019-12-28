@@ -4,7 +4,13 @@ const NotFoundError = require('../errors/NotFoundError');
 
 module.exports.getArticles = (req, res, next) => {
   Article.find({})
-    .then((users) => res.send({ data: users }))
+    .select('+owner')
+    .then((articles) => {
+      if (articles.length !== 0) {
+        const data = articles.filter((item) => String(item.owner) === req.user._id);
+        res.send({ articles: data });
+      } else throw new NotFoundError('Ресурсы не созданы на сервере');
+    })
     .catch(next);
 };
 
