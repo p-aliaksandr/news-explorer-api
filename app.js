@@ -67,6 +67,6 @@ app.use(errors());
 app.use(centralizedErrors);
 
 // Разрешение кросс-доменных запросов
-app.use(cors());
+app.use(cors);
 
 app.listen(PORT);
