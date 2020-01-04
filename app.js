@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const { errors } = require('celebrate');
+const cors = require('./middlewares/cors');
 const auth = require('./middlewares/auth');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const { createUser, login } = require('./controllers/users');
@@ -64,5 +65,8 @@ app.use(errors());
 
 // Централизованный обработчик ошибок
 app.use(centralizedErrors);
+
+// Разрешение кросс-доменных запросов
+app.use(cors());
 
 app.listen(PORT);
