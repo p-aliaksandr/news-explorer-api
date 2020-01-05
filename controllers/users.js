@@ -2,12 +2,18 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 const UnauthorizedError = require('../errors/UnauthorizedError');
+const NotFoundError = require('../errors/ForbiddenError');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
 module.exports.getUsers = (req, res, next) => {
-  User.find({})
-    .then((users) => res.send({ data: users }))
+  User.findById({ _id: req.user._id })
+    .then((user) => {
+      if (user.length === 0) {
+        throw new NotFoundError('Данные о пользователе не найдены');
+      }
+      res.send({ name: user.name, email: user.email });
+    })
     .catch(next);
 };
 
