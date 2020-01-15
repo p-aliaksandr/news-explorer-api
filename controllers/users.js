@@ -3,6 +3,10 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 const UnauthorizedError = require('../errors/UnauthorizedError');
 const NotFoundError = require('../errors/ForbiddenError');
+const { noDataFound } = require('../consts');
+const { wrongData } = require('../consts');
+const { successAuth } = require('../consts');
+const { devKey } = require('../consts');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -10,7 +14,7 @@ module.exports.getUsers = (req, res, next) => {
   User.findById({ _id: req.user._id })
     .then((user) => {
       if (user.length === 0) {
-        throw new NotFoundError('Данные о пользователе не найдены');
+        throw new NotFoundError(noDataFound);
       }
       res.send({ name: user.name, email: user.email });
     })
@@ -38,16 +42,16 @@ module.exports.login = (req, res, next) => {
   User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        throw new UnauthorizedError('Неправильные почта или пароль');
+        throw new UnauthorizedError(wrongData);
       }
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            throw new UnauthorizedError('Неправильные почта или пароль');
+            throw new UnauthorizedError(wrongData);
           }
           const token = jwt.sign(
             { _id: user._id },
-            NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+            NODE_ENV === 'production' ? JWT_SECRET : devKey,
             { expiresIn: '7d' },
           );
           return res.cookie('jwt', token, {
@@ -55,7 +59,7 @@ module.exports.login = (req, res, next) => {
             httpOnly: true,
             sameSite: true,
           })
-            .send({ message: 'Успешная авторизация!' })
+            .send({ message: successAuth })
             .end();
         });
     })

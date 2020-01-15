@@ -7,13 +7,12 @@ const { errors } = require('celebrate');
 const cors = require('./middlewares/cors');
 const auth = require('./middlewares/auth');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-const { createUser, login } = require('./controllers/users');
-const { signinValidation, signupValidation } = require('./validationData');
 const { urlMongo } = require('./consts');
 const BadRequestError = require('./errors/BadRequestError');
 const centralizedErrors = require('./middlewares/CentralizedErrors');
 const { limiter } = require('./middlewares/limiter');
-const { routerArticles, routerUsers } = require('./routes/index');
+const { routerArticles, routerUsers, userAuthRoute } = require('./routes/index');
+const { resouceNotFound } = require('./consts');
 
 // Слушаем 3000 порт
 const { PORT = 3000 } = process.env;
@@ -43,18 +42,18 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Роутеры не требующие авторизации, регистрация и логин(с валидацией)
-app.post('/signup', signupValidation, createUser);
-app.post('/signin', signinValidation, login);
+app.use('/', userAuthRoute);
 
 // Авторизация
 app.use(auth);
 
 // Роутеры
-app.use('/', routerArticles, routerUsers);
+app.use('/', routerUsers);
+app.use('/', routerArticles);
 
 // Неправильная маршрутизация
 app.use('*', (res, req, next) => {
-  next(new BadRequestError('Запрашиваемый ресурс не найден'));
+  next(new BadRequestError(resouceNotFound));
 });
 
 // Подключаем логгер ошибок

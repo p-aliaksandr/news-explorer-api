@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
+const { wrongEmail } = require('../consts');
 
 // Опишем схему:
 const userSchema = new mongoose.Schema({
@@ -15,7 +16,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     validate: {
       validator: validator.isEmail,
-      message: 'Неправильный формат e-mail',
+      message: wrongEmail,
     },
   },
   password: {
