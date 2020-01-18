@@ -18,8 +18,11 @@ const app = express();
 // Модуль helmet поставляет автоматически заголовки безопасности
 app.use(helmet());
 
+const { NODE_ENV, MONGO_DB } = process.env;
+const db = NODE_ENV === 'production' && MONGO_DB ? MONGO_DB : urlMongo;
+
 // Подключаемся к серверу mongo
-mongoose.connect(urlMongo, {
+mongoose.connect(db, {
   useNewUrlParser: true,
   useCreateIndex: true,
   useFindAndModify: false,
