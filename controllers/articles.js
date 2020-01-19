@@ -1,10 +1,19 @@
 const Article = require('../models/article');
 const ForbiddenError = require('../errors/ForbiddenError');
 const NotFoundError = require('../errors/NotFoundError');
+const { noResources } = require('../consts');
+const { noArticle } = require('../consts');
+const { deleteYourArticles } = require('../consts');
 
 module.exports.getArticles = (req, res, next) => {
   Article.find({})
-    .then((users) => res.send({ data: users }))
+    .select('+owner')
+    .then((articles) => {
+      if (articles.length !== 0) {
+        const data = articles.filter((item) => String(item.owner) === req.user._id);
+        res.send({ articles: data });
+      } else throw new NotFoundError(noResources);
+    })
     .catch(next);
 };
 
@@ -24,10 +33,10 @@ module.exports.deleteArticle = (req, res, next) => {
   const { _id } = req.user;
   const { articleId } = req.params;
 
-  Article.findOne({ _id: articleId })
+  Article.findOne({ _id: articleId }).select('+owner')
     .then((article) => {
       if (!article) {
-        throw new NotFoundError('Статья с таким id не найдена');
+        throw new NotFoundError(noArticle);
       }
       return article;
     })
@@ -37,7 +46,7 @@ module.exports.deleteArticle = (req, res, next) => {
           .then((data) => res.send(data))
           .catch(next);
       } else {
-        throw new ForbiddenError('Можно удалять только свои статьи');
+        throw new ForbiddenError(deleteYourArticles);
       }
     })
     .catch(next);

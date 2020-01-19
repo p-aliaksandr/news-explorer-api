@@ -17,7 +17,7 @@ const articleSchema = new mongoose.Schema({
   },
   date: {
     required: true,
-    type: String,
+    type: Date,
   },
   source: {
     required: true,
@@ -34,9 +34,9 @@ const articleSchema = new mongoose.Schema({
     match: urlRegEx,
   },
   owner: {
+    select: false,
     type: mongoose.Schema.Types.ObjectId,
     ref: 'user',
-    select: false,
   },
 });
 
