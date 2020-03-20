@@ -59,7 +59,12 @@ module.exports.login = (req, res, next) => {
             httpOnly: true,
             sameSite: true,
           })
-            .send({ message: successAuth })
+            .send({
+              message: successAuth,
+              userToken: token,
+              name: user.name,
+              email: user.email,
+            })
             .end();
         });
     })
