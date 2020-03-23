@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const { errors } = require('celebrate');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const { urlMongo } = require('./consts');
+const cors = require('./middlewares/cors');
 const centralizedErrors = require('./middlewares/CentralizedErrors');
 const { limiter } = require('./middlewares/limiter');
 const routes = require('./routes/index');
@@ -28,6 +29,8 @@ mongoose.connect(db, {
   useFindAndModify: false,
   useUnifiedTopology: true,
 });
+
+app.use(cors);
 
 app.route('*')
   .all((req, res, next) => {

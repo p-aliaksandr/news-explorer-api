@@ -11,13 +11,6 @@ const allowedCors = [
   'http://localhost:8080',
 ];
 
-module.exports = cors((req, res, next) => {
-  const { origin } = req.headers; // Записываем в переменную origin соответствующий заголовок
-
-  // Проверяем, что значение origin есть среди разрешённых доменов
-  if (allowedCors.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-  }
-
-  next();
+module.exports = cors({
+  origin: allowedCors,
 });
