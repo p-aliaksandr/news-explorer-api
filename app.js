@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
+const cors = require('cors');
 const { errors } = require('celebrate');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const { urlMongo } = require('./consts');
@@ -28,6 +29,8 @@ mongoose.connect(db, {
   useFindAndModify: false,
   useUnifiedTopology: true,
 });
+
+app.use(cors());
 
 // Подключаем rate-limiter
 app.use(limiter);
